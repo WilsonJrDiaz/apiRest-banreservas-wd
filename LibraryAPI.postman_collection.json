@@ -1,0 +1,874 @@
+{
+  "info": {
+    "name": "Library API - Desafio 3",
+    "description": "Automatización de pruebas funcionales e integración para la API de Libros (https://rahulshettyacademy.com/Library)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://rahulshettyacademy.com/Library",
+      "type": "string"
+    },
+    {
+      "key": "bookId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookId2",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Agregar un libro",
+      "item": [
+        {
+          "name": "1a-1b-1c-1d - Agregar libro exitosamente (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Validar código de respuesta exitoso: 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON: nombres de Key y tipo de valores",
+                  "pm.test('b. Respuesta contiene key Msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('Msg');",
+                  "    pm.expect(json.Msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Respuesta contiene key ID de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('ID');",
+                  "    pm.expect(json.ID).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.Msg).to.eql('successfully added');",
+                  "});",
+                  "",
+                  "// c. Validar que el tiempo de respuesta sea inferior a 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "// d. Validar que el valor del campo ID sea la concatenación de isbn + aisle",
+                  "pm.test('d. El campo ID es la concatenación de isbn + aisle', function () {",
+                  "    var json = pm.response.json();",
+                  "    var body = JSON.parse(pm.request.body.raw);",
+                  "    var expectedId = body.isbn + body.aisle;",
+                  "    pm.expect(json.ID).to.eql(expectedId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fundamentos de Programacion\",\n  \"isbn\": \"12345\",\n  \"aisle\": \"678\",\n  \"author\": \"Juan Perez\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Addbook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["Addbook.php"]
+            }
+          }
+        },
+        {
+          "name": "1e - Agregar libro con aisle inválido (500 Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// e. Validar código de respuesta 500 cuando aisle contiene letras",
+                  "pm.test('e. Status code es 500 cuando aisle contiene letras', function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "",
+                  "// c. Validar tiempo de respuesta",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Libro Invalido\",\n  \"isbn\": \"99999\",\n  \"aisle\": \"ABC\",\n  \"author\": \"Autor Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Addbook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["Addbook.php"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Obtener un libro",
+      "item": [
+        {
+          "name": "2a-2b-2c - Obtener libro existente por ID (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Validar código de respuesta exitoso: 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON: nombres de Key y tipo de valores",
+                  "pm.test('b. Cada elemento contiene key book_name de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array').that.is.not.empty;",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('book_name');",
+                  "        pm.expect(item.book_name).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key isbn de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('isbn');",
+                  "        pm.expect(item.isbn).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key aisle de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('aisle');",
+                  "        pm.expect(item.aisle).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key author de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('author');",
+                  "        pm.expect(item.author).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "// c. Validar que el tiempo de respuesta sea inferior a 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID=12345678",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "12345678"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2d - Obtener libro con ID inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// d. Validar que ID no existente retorne 404 con mensaje de validación",
+                  "pm.test('d. Status code es 404 para ID inexistente', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('d. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('d. Mensaje indica que el libro no existe', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.include('does not exists');",
+                  "});",
+                  "",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID=00000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "00000000"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Eliminar un libro",
+      "item": [
+        {
+          "name": "3a-3b-3c - Setup: Crear libro para eliminar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Setup: libro creado para el test de eliminación', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('deleteBookId', json.ID);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Libro Para Eliminar\",\n  \"isbn\": \"55555\",\n  \"aisle\": \"999\",\n  \"author\": \"Autor Temp\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Addbook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["Addbook.php"]
+            }
+          }
+        },
+        {
+          "name": "3a-3b-3c - Eliminar libro existente (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Validar código de respuesta exitoso: 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON: nombres de Key y tipo de valores",
+                  "pm.test('b. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.eql('book is successfully deleted');",
+                  "});",
+                  "",
+                  "// c. Validar que el tiempo de respuesta sea inferior a 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ID\": \"{{deleteBookId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/DeleteBook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["DeleteBook.php"]
+            }
+          }
+        },
+        {
+          "name": "3d - Eliminar libro con ID inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// d. Validar que ID no existente retorne 404 con mensaje de validación",
+                  "pm.test('d. Status code es 404 para ID inexistente', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('d. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('d. Mensaje indica que el libro no existe o no se puede eliminar', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.include('doesnt exists');",
+                  "});",
+                  "",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ID\": \"00000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/DeleteBook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["DeleteBook.php"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Pruebas de Integración",
+      "item": [
+        {
+          "name": "4i - Crear libro 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Respuesta contiene key Msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('Msg');",
+                  "    pm.expect(json.Msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Respuesta contiene key ID de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('ID');",
+                  "    pm.expect(json.ID).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.Msg).to.eql('successfully added');",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "// d. Validar que ID = isbn + aisle y guardar para siguientes pasos",
+                  "pm.test('d. El campo ID es la concatenación de isbn + aisle', function () {",
+                  "    var json = pm.response.json();",
+                  "    var body = JSON.parse(pm.request.body.raw);",
+                  "    var expectedId = body.isbn + body.aisle;",
+                  "    pm.expect(json.ID).to.eql(expectedId);",
+                  "    pm.collectionVariables.set('bookId1', json.ID);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Clean Code\",\n  \"isbn\": \"11111\",\n  \"aisle\": \"101\",\n  \"author\": \"Robert Martin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Addbook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["Addbook.php"]
+            }
+          }
+        },
+        {
+          "name": "4i - Crear libro 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Respuesta contiene key Msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('Msg');",
+                  "    pm.expect(json.Msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Respuesta contiene key ID de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('ID');",
+                  "    pm.expect(json.ID).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.Msg).to.eql('successfully added');",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "// d. Validar que ID = isbn + aisle y guardar para siguientes pasos",
+                  "pm.test('d. El campo ID es la concatenación de isbn + aisle', function () {",
+                  "    var json = pm.response.json();",
+                  "    var body = JSON.parse(pm.request.body.raw);",
+                  "    var expectedId = body.isbn + body.aisle;",
+                  "    pm.expect(json.ID).to.eql(expectedId);",
+                  "    pm.collectionVariables.set('bookId2', json.ID);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"The Pragmatic Programmer\",\n  \"isbn\": \"22222\",\n  \"aisle\": \"202\",\n  \"author\": \"David Thomas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Addbook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["Addbook.php"]
+            }
+          }
+        },
+        {
+          "name": "4ii - Consultar libro 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Cada elemento contiene key book_name de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array').that.is.not.empty;",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('book_name');",
+                  "        pm.expect(item.book_name).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key isbn de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('isbn');",
+                  "        pm.expect(item.isbn).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key aisle de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('aisle');",
+                  "        pm.expect(item.aisle).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key author de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('author');",
+                  "        pm.expect(item.author).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID={{bookId1}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "{{bookId1}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4ii - Consultar libro 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Cada elemento contiene key book_name de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array').that.is.not.empty;",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('book_name');",
+                  "        pm.expect(item.book_name).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key isbn de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('isbn');",
+                  "        pm.expect(item.isbn).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key aisle de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('aisle');",
+                  "        pm.expect(item.aisle).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('b. Cada elemento contiene key author de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    json.forEach(function (item) {",
+                  "        pm.expect(item).to.have.property('author');",
+                  "        pm.expect(item.author).to.be.a('string');",
+                  "    });",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID={{bookId2}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "{{bookId2}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4iii - Eliminar libro 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.eql('book is successfully deleted');",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ID\": \"{{bookId1}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/DeleteBook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["DeleteBook.php"]
+            }
+          }
+        },
+        {
+          "name": "4iii - Eliminar libro 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// a. Código 200 OK",
+                  "pm.test('a. Status code es 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// b. Validar estructura del JSON",
+                  "pm.test('b. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('b. Mensaje de éxito es correcto', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.eql('book is successfully deleted');",
+                  "});",
+                  "",
+                  "// c. Tiempo de respuesta < 500 ms",
+                  "pm.test('c. Tiempo de respuesta es menor a 500 ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ID\": \"{{bookId2}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/DeleteBook.php",
+              "host": ["{{baseUrl}}"],
+              "path": ["DeleteBook.php"]
+            }
+          }
+        },
+        {
+          "name": "4iv - Verificar que libro 1 ya no existe (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// d. Validar 404 con mensaje de validación correcto",
+                  "pm.test('d. Status code es 404 - libro 1 eliminado', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('d. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('d. Mensaje indica que el libro no existe', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.include('does not exists');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID={{bookId1}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "{{bookId1}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4iv - Verificar que libro 2 ya no existe (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// d. Validar 404 con mensaje de validación correcto",
+                  "pm.test('d. Status code es 404 - libro 2 eliminado', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('d. Respuesta contiene key msg de tipo string', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('msg');",
+                  "    pm.expect(json.msg).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('d. Mensaje indica que el libro no existe', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.msg).to.include('does not exists');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/GetBook.php?ID={{bookId2}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["GetBook.php"],
+              "query": [
+                {
+                  "key": "ID",
+                  "value": "{{bookId2}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
